@@ -25,6 +25,27 @@ Sensor* State::GetSensor(sensor_t type) {
     return nullptr;
 }
 
+bool State::AddAnalyzer(Analyzer* analyzer) {
+
+    for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
+        if (analyzerArray[i] == nullptr) {
+            analyzerArray[i] = analyzer;
+            return true;
+        }
+    }
+    return false;
+}
+
+Analyzer* State::GetAnalyzer(sensor_t type) {
+
+    for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
+        if (analyzerArray[i] != nullptr && analyzerArray[i]->GetSensorType() == type) {
+            return analyzerArray[i];
+        }
+    }
+    return nullptr;
+}
+
 State::~State() {
     for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
         if (sensorArray[i] != nullptr) {

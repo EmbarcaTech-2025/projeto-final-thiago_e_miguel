@@ -44,6 +44,7 @@ add_executable(tracking-trilha main.cpp
     src/utils/utils.cpp
     src/state/state.cpp
     src/state/state_collect.cpp
+    src/analyzer/analyzer.cpp
 )
 
 pico_set_program_name(tracking-trilha "tracking-trilha")
@@ -67,6 +68,7 @@ target_include_directories(tracking-trilha PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include/sensors
         ${CMAKE_CURRENT_LIST_DIR}/include/utils
         ${CMAKE_CURRENT_LIST_DIR}/include/state
+        ${CMAKE_CURRENT_LIST_DIR}/include/analyzer
 )
 
 # Add any user requested libraries 

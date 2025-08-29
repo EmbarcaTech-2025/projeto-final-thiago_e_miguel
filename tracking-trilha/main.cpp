@@ -4,6 +4,7 @@
 #include "oximeter.h"
 #include "accelerometer.h"
 #include "state_collect.h"
+#include "analyzer.h"
 
 #define TICK_PERIOD_MS 1000 // ms
 
@@ -14,8 +15,24 @@ int main(void) {
     Oximeter oximeter;
     Accelerometer accelerometer;
 
+    analyzerConfig_t oximeterAnalyzerConfig = {
+        .thresholds = {0.0, 0.0, 0.0, 0.0, 0.0},
+        .sensorType = SENSOR_TYPE_OXIMETER
+    };
+
+    analyzerConfig_t accelerometerAnalyzerConfig = {
+        .thresholds = {0.0, 0.0, 0.0, 0.0, 0.0},
+        .sensorType = SENSOR_TYPE_ACCELEROMETER
+    };
+
+    Analyzer oximeterAnalyzer(oximeterAnalyzerConfig);
+    Analyzer accelerometerAnalyzer(accelerometerAnalyzerConfig);
+
     stateCollect.AddSensor(&oximeter);
     stateCollect.AddSensor(&accelerometer);
+
+    stateCollect.AddAnalyzer(&oximeterAnalyzer);
+    stateCollect.AddAnalyzer(&accelerometerAnalyzer);
 
     while (1) {
         stateCollect.Update();
