@@ -42,6 +42,8 @@ add_executable(tracking-trilha main.cpp
     src/sensors/oximeter.cpp
     src/sensors/accelerometer.cpp
     src/utils/utils.cpp
+    src/state/state.cpp
+    src/state/state_collect.cpp
 )
 
 pico_set_program_name(tracking-trilha "tracking-trilha")
@@ -64,6 +66,7 @@ target_include_directories(tracking-trilha PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include/drivers/accelerometer
         ${CMAKE_CURRENT_LIST_DIR}/include/sensors
         ${CMAKE_CURRENT_LIST_DIR}/include/utils
+        ${CMAKE_CURRENT_LIST_DIR}/include/state
 )
 
 # Add any user requested libraries 

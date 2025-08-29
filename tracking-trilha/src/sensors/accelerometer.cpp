@@ -1,4 +1,5 @@
 #include "accelerometer.h"
+#include <string.h>
 
 Accelerometer::Accelerometer() : Sensor() {
   busy_wait_ms(500);
@@ -7,6 +8,8 @@ Accelerometer::Accelerometer() : Sensor() {
         printf("IMU6050 not connect r fail load calib coeff \r\n");
         busy_wait_ms(500);
     }
+
+    sensorType = SENSOR_TYPE_ACCELEROMETER;
 }
 
 void Accelerometer::Update() {
