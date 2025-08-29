@@ -47,10 +47,4 @@ Analyzer* State::GetAnalyzer(sensor_t type) {
 }
 
 State::~State() {
-    for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
-        if (sensorArray[i] != nullptr) {
-            delete sensorArray[i];
-            sensorArray[i] = nullptr;
-        }
-    }
 }

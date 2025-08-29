@@ -16,8 +16,10 @@ int main(void) {
 
     oled.Clear();
     oled.PrintText(2, "Iniciando...");
-    oled.DrawLine(0, 0, 128, 0, true);
+    oled.DrawLine(0, 0, 127, 63, true);
     oled.Render();
+
+    sleep_ms(2000);
 
     StateCollect stateCollect;
 

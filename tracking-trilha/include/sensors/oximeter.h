@@ -7,9 +7,9 @@
 #include "sensor.h"
 #include "algorithm_by_RF.h"
 
-#define PIN_WIRE_SDA_OXI 2
-#define PIN_WIRE_SCL_OXI 3
-#define I2C_PORT_OXI i2c1
+#define PIN_WIRE_SDA_OXI 0
+#define PIN_WIRE_SCL_OXI 1
+#define I2C_PORT_OXI i2c0
 
 #define MAX3010X_ADDRESS	0x57
 #define BUFFER_SIZE_ALGORITHM 100  // only for algorithm_by_RF.h
