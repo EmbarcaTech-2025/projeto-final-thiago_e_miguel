@@ -68,7 +68,7 @@ target_include_directories(tracking-trilha PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include/sensors
         ${CMAKE_CURRENT_LIST_DIR}/include/utils
         ${CMAKE_CURRENT_LIST_DIR}/include/state
-        ${CMAKE_CURRENT_LIST_DIR}/include/analyzer
+        ${CMAKE_CURRENT_LIST_DIR}/include/analyzers
 )
 
 # Add any user requested libraries 

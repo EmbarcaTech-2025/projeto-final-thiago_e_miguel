@@ -1,5 +1,6 @@
 #include "accelerometer.h"
 #include <string.h>
+#include "utils.h"
 
 Accelerometer::Accelerometer() : Sensor() {
   busy_wait_ms(500);
@@ -13,12 +14,6 @@ Accelerometer::Accelerometer() : Sensor() {
 }
 
 void Accelerometer::Update() {
-    if (buffer_size_accel_x >= MAX_BUFFER_SIZE ||
-        buffer_size_accel_y >= MAX_BUFFER_SIZE ||
-        buffer_size_accel_z >= MAX_BUFFER_SIZE) {
-        return; // Buffer cheio, não adicionar mais dados
-    }
-
     imu6050_data_t raw_data;
     imu6050_calibrated_t calibrated_data;
 
@@ -28,6 +23,15 @@ void Accelerometer::Update() {
     // Converter dados brutos para unidades físicas (g)
     imuSensor.convert_accelerometer_data(&raw_data, &calibrated_data);
 
+    if (buffer_size_accel_x >= MAX_BUFFER_SIZE) {
+      shift_buffer(buffer_accel_x, &buffer_size_accel_x);
+    }
+    if (buffer_size_accel_y >= MAX_BUFFER_SIZE) {
+      shift_buffer(buffer_accel_y, &buffer_size_accel_y);
+    }
+    if (buffer_size_accel_z >= MAX_BUFFER_SIZE) {
+      shift_buffer(buffer_accel_z, &buffer_size_accel_z);
+    }
     // Armazenar dados nos buffers
     buffer_accel_x[buffer_size_accel_x++] = calibrated_data.x;
     buffer_accel_y[buffer_size_accel_y++] = calibrated_data.y;
