@@ -20,7 +20,7 @@ public:
     virtual Sensor* GetSensor(sensor_t type);
 
     virtual bool AddAnalyzer(Analyzer* analyzer);
-    virtual Analyzer* GetAnalyzer(sensor_t type);
+    virtual Analyzer* GetAnalyzer(sensor_t type, sample_t sampleType);
 
     inline bool PopRequested() const { return popRequested; }
     inline bool QuitRequested() const { return quitRequested; }
