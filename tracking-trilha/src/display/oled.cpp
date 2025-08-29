@@ -25,7 +25,7 @@ void Oled::PrintText(int line_index, const char* text) {
   char* o_led_text[] = {
     (char*)text
   };
-  print_lines_OLed(o_led_text, 8, 0, y);
+  print_lines_OLed(o_led_text, 1, 0, y);
 }
 
 void Oled::Render() {
