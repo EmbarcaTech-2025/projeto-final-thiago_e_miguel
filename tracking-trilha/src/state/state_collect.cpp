@@ -14,6 +14,11 @@ sample_t StateCollect::wanted_samples[] = {
 };
 
 StateCollect::StateCollect() : State() {
+    Oximeter* oximeter = new Oximeter();
+    Accelerometer* accelerometer = new Accelerometer();
+
+    AddSensor(oximeter);
+    AddSensor(accelerometer);
 }
 
 void StateCollect::Update() {
