@@ -1,15 +1,16 @@
 #include "oximeter.h"
 #include "utils.h"
 
-MAX3010X heartSensor(I2C_PORT, PIN_WIRE_SDA, PIN_WIRE_SCL, I2C_SPEED_FAST);
+MAX3010X heartSensor(I2C_PORT_OXI, PIN_WIRE_SDA_OXI, PIN_WIRE_SCL_OXI, I2C_SPEED_FAST);
 
 Oximeter::Oximeter() : Sensor() {
   busy_wait_ms(500);
-	while (heartSensor.begin() != true)
-	{
+	while (heartSensor.begin() != true) {
 		printf("MAX30102 not connect r fail load calib coeff \r\n");
 		busy_wait_ms(500);
 	}
+
+  sensorType = SENSOR_TYPE_OXIMETER;
 
 	uint8_t powerLevel = 0x1f; //Options: 0=Off to 255=50mA
 	uint8_t sampleAverage = 0x04; //Options: 1, 2, 4, 8, 16, 32

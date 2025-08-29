@@ -5,10 +5,6 @@
 
 #define MAX_BUFFER_SIZE 128
 
-#define PIN_WIRE_SDA 2
-#define PIN_WIRE_SCL 3
-#define I2C_PORT i2c1
-
 #define I2C_SPEED_STANDARD	100000
 #define I2C_SPEED_FAST		400000
 
@@ -22,6 +18,11 @@ typedef enum sample_t {
     SAMPLE_TYPE_QTT
 } sample_t;
 
+typedef enum sensor_t {
+    SENSOR_TYPE_OXIMETER,
+    SENSOR_TYPE_ACCELEROMETER,
+    SENSOR_TYPE_QTT
+} sensor_t;
 
 typedef struct {
     uint64_t timestamp;
@@ -34,4 +35,7 @@ class Sensor {
   public:
     virtual void Update() = 0;
     virtual bool getData(Data_t* data) = 0;
+    virtual inline sensor_t GetType() { return sensorType; }
+  protected:
+    sensor_t sensorType;
 };
