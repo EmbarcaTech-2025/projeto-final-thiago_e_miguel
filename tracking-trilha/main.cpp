@@ -5,11 +5,20 @@
 #include "accelerometer.h"
 #include "state_collect.h"
 #include "analyzer.h"
+#include "oled.h"
 
 #define TICK_PERIOD_MS 1000 // ms
 
 int main(void) {
     stdio_init_all();
+
+    Oled oled;
+
+    oled.Clear();
+    oled.PrintText(2, "Iniciando...");
+    oled.DrawLine(0, 0, 128, 0, true);
+    oled.Render();
+
     StateCollect stateCollect;
 
     Oximeter oximeter;

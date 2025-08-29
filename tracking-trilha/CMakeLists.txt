@@ -45,6 +45,9 @@ add_executable(tracking-trilha main.cpp
     src/state/state.cpp
     src/state/state_collect.cpp
     src/analyzer/analyzer.cpp
+    src/drivers/display_oled/ssd1306_i2c.cpp
+    src/drivers/display_oled/display_oled.cpp
+    src/display/oled.cpp
 )
 
 pico_set_program_name(tracking-trilha "tracking-trilha")
@@ -69,6 +72,8 @@ target_include_directories(tracking-trilha PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include/utils
         ${CMAKE_CURRENT_LIST_DIR}/include/state
         ${CMAKE_CURRENT_LIST_DIR}/include/analyzers
+        ${CMAKE_CURRENT_LIST_DIR}/include/drivers/display_oled
+        ${CMAKE_CURRENT_LIST_DIR}/include/display
 )
 
 # Add any user requested libraries 
