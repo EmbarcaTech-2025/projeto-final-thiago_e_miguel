@@ -8,15 +8,18 @@
 #define TICK_PERIOD_MS 1000 // ms
 
 int main(void) {
-
-	stdio_init_all();
-
+    stdio_init_all();
     StateCollect stateCollect;
 
-	while (1) {
-        stateCollect.Update();
+    Oximeter oximeter;
+    Accelerometer accelerometer;
 
+    stateCollect.AddSensor(&oximeter);
+    stateCollect.AddSensor(&accelerometer);
+
+    while (1) {
+        stateCollect.Update();
         sleep_ms(TICK_PERIOD_MS);
-	}
-	return 0;
+    }
+    return 0;
 }
