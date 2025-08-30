@@ -143,8 +143,6 @@ Para ver o **Tracking-Trilha** em ação, confira o vídeo abaixo:
 
 [Video de demonstração](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
 
-*Nota: Este é um link de espaço reservado. Assim que o vídeo oficial do projeto estiver disponível, substitua este link pelo correto.*
-
 ---
 
 ## 📝 Comentários e Melhorias Futuras
