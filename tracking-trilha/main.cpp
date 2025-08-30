@@ -12,15 +12,6 @@
 int main(void) {
     stdio_init_all();
 
-    Oled oled;
-
-    oled.Clear();
-    oled.PrintText(2, "Iniciando...");
-    oled.DrawLine(0, 0, 127, 63, true);
-    oled.Render();
-
-    sleep_ms(2000);
-
     StateCollect stateCollect;
     Oximeter oximeter = Oximeter();
     Accelerometer accelerometer = Accelerometer();
@@ -57,6 +48,12 @@ int main(void) {
     stateCollect.AddAnalyzer(&accelerometerAnalyzer);
 
     stateCollect.AddAnalyzer(&heartRateAnalyzer);
+
+    Oled oled;
+
+    oled.Clear();
+
+    stateCollect.setOled(&oled);
 
 	while (1) {
         stateCollect.Update();
