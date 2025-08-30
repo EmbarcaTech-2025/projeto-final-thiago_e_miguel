@@ -8,10 +8,10 @@ healthStatus_t Analyzer::Analyze(Data_t* data) {
 
   for (size_t i = 0; i < data->size; i++) {
     for (size_t j = 0; j < HEALTH_STATUS_CRITICAL_HIGH + 1; j++) {
-      if (data->data[i] > config.thresholds[j]) {
-        healthStatus = (healthStatus_t)j;
+      if (data->data[i] < config.thresholds[j]) {
         break;
       }
+      healthStatus = (healthStatus_t)j;
     }
   }
 

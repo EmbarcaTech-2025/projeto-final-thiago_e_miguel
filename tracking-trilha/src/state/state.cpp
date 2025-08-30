@@ -3,6 +3,7 @@
 State::State() : popRequested(false), quitRequested(false) {
     for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
         sensorArray[i] = nullptr;
+        analyzerArray[i] = nullptr;
     }
 }
 
@@ -36,10 +37,10 @@ bool State::AddAnalyzer(Analyzer* analyzer) {
     return false;
 }
 
-Analyzer* State::GetAnalyzer(sensor_t type) {
+Analyzer* State::GetAnalyzer(sensor_t type, sample_t sampleType) {
 
     for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
-        if (analyzerArray[i] != nullptr && analyzerArray[i]->GetSensorType() == type) {
+        if (analyzerArray[i] != nullptr && analyzerArray[i]->GetSensorType() == type && analyzerArray[i]->GetSampleType() == sampleType) {
             return analyzerArray[i];
         }
     }
