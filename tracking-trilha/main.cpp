@@ -7,7 +7,7 @@
 #include "analyzer.h"
 #include "oled.h"
 
-#define TICK_PERIOD_MS 1000 // ms
+#define TICK_PERIOD_MS 100 // ms
 
 int main(void) {
     stdio_init_all();

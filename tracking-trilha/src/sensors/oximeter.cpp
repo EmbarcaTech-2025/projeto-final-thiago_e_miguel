@@ -15,7 +15,7 @@ Oximeter::Oximeter() : Sensor() {
 	uint8_t powerLevel = 0x1f; //Options: 0=Off to 255=50mA
 	uint8_t sampleAverage = 0x04; //Options: 1, 2, 4, 8, 16, 32
 	uint8_t ledMode = 0x03; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
-	int sampleRate = 400; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
+	int sampleRate = 1600; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
 	int pulseWidth = 411; //Options: 69, 118, 215, 411
 	int adcRange = 4096; //Options: 2048, 4096, 8192, 16384
 	heartSensor.setup(powerLevel, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
@@ -64,9 +64,20 @@ void Oximeter::Update() {
   uint32_t aun_ir_buffer[BUFFER_SIZE_ALGORITHM]; //infrared LED sensor data
   uint32_t aun_red_buffer[BUFFER_SIZE_ALGORITHM];  //red LED sensor data
   
+  // Collect samples with minimal delay - use FIFO data when available
   for(int i=0;i<BUFFER_SIZE_ALGORITHM;i++) { //store the samples in the memory
-    aun_red_buffer[i]=heartSensor.getRed();
-    aun_ir_buffer[i]=heartSensor.getIR();
+    // Check if new data is available in FIFO
+    if(heartSensor.available() > 0) {
+      aun_red_buffer[i] = heartSensor.getFIFORed();
+      aun_ir_buffer[i] = heartSensor.getFIFOIR();
+      heartSensor.nextSample();
+    } else {
+      // Fallback to immediate readings with shorter timeout
+      aun_red_buffer[i] = heartSensor.getRed();
+      aun_ir_buffer[i] = heartSensor.getIR();
+    }
+    // Small delay to allow sensor to collect new samples
+    busy_wait_us(625); // 625us = 1/1600Hz for 1600Hz sample rate
   }
 
   float ratio,correl;

@@ -12,7 +12,7 @@
 #define I2C_PORT_OXI i2c0
 
 #define MAX3010X_ADDRESS	0x57
-#define BUFFER_SIZE_ALGORITHM 100  // only for algorithm_by_RF.h
+#define BUFFER_SIZE_ALGORITHM 25  // only for algorithm_by_RF.h - reduced for faster processing
 
 class Oximeter : public Sensor {
   public:
