@@ -26,7 +26,7 @@ void StateCollect::PrintOled(int line_index, const char* text) {
 }
 
 void StateCollect::Update() {
-    PrintOled(1, "Coletando...     ");
+    PrintOled(0, "Coletando...     ");
 
     for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
         if (sensorArray[i] != nullptr) {
@@ -45,7 +45,7 @@ void StateCollect::Update() {
               if (sensor->getData(&data)) {
                   char data_str[17];
                   sprintf(data_str, "S%2d T%2d V%2.1f", sensor_type, data.type, data.data[0]);
-                  PrintOled(2, data_str);
+                  PrintOled(sample_index + 1, data_str);
                   printf("Sensor Type: %d, Sample Type: %d, Data: ", sensor_type, data.type);
                   for (size_t buffer_index = 0; buffer_index < data.size; buffer_index++) {
                       printf("%.3f ", data.data[buffer_index]);
@@ -54,7 +54,7 @@ void StateCollect::Update() {
                       healthStatus_t healthStatus = analyzer->Analyze(&data);
                       char health_status_str[17];
                       sprintf(health_status_str, "H%2d", healthStatus);
-                      PrintOled(4, health_status_str);
+                      PrintOled(7, health_status_str);
                       printf("Health Status: %d\n", healthStatus);
                   } else {
                     printf("No analyzer found for sensor type: %d\n", sensor_type);

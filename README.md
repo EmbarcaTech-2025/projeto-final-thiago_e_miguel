@@ -66,6 +66,7 @@ Tracking-Trilha é um sistema de monitoramento de saúde e atividade física des
 2. Certifique-se de que o Pico SDK está configurado corretamente no seu ambiente.
 
 3. Conecte os sensores ao Raspberry Pi Pico W:
+
    - **MAX3010X**: Conecte SDA e SCL aos pinos I2C configurados
    - **IMU6050**: Conecte SDA e SCL aos pinos I2C configurados
    - **Display OLED**: Conecte SDA e SCL aos pinos I2C configurados
@@ -91,6 +92,7 @@ Tracking-Trilha é um sistema de monitoramento de saúde e atividade física des
 ## 🔧 Configuração dos Sensores
 
 ### Oxímetro MAX3010X
+
 - **Frequência de amostragem**: 400 Hz
 - **Largura de pulso**: 411 μs
 - **Faixa ADC**: 4096
@@ -98,11 +100,13 @@ Tracking-Trilha é um sistema de monitoramento de saúde e atividade física des
 - **Nível de potência**: 50mA
 
 ### Acelerômetro IMU6050
+
 - **Faixa de aceleração**: ±2g, ±4g, ±8g, ±16g
 - **Frequência de amostragem**: configurável
 - **Calibração automática** para compensar offset
 
 ### Display OLED SSD1306
+
 - **Resolução**: 128x64 pixels
 - **Interface**: I2C
 - **Fonte**: embutida para exibição de texto
@@ -130,6 +134,7 @@ O sistema implementa um analisador inteligente que categoriza os dados dos senso
 ## 📱 Interface do Usuário
 
 O display OLED apresenta informações em tempo real:
+
 - **Linha 1**: Status do SpO2 com indicador visual
 - **Linha 2**: Frequência cardíaca atual
 - **Linha 3**: Dados de aceleração (X, Y, Z)
@@ -141,7 +146,7 @@ O display OLED apresenta informações em tempo real:
 
 Para ver o **Tracking-Trilha** em ação, confira o vídeo abaixo:
 
-[Video de demonstração](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+[Video de demonstração](https://youtu.be/l7InYfwbljI)
 
 ---
 
