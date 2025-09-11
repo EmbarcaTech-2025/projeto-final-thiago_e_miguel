@@ -19,6 +19,18 @@ Oximeter::Oximeter() : Sensor() {
 	int pulseWidth = 411; //Options: 69, 118, 215, 411
 	int adcRange = 4096; //Options: 2048, 4096, 8192, 16384
 	heartSensor.setup(powerLevel, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
+	
+	// Initialize FreeRTOS components
+	taskHandle = nullptr;
+	dataMutex = xSemaphoreCreateMutex();
+	taskRunning = false;
+}
+
+Oximeter::~Oximeter() {
+	StopTask();
+	if (dataMutex != nullptr) {
+		vSemaphoreDelete(dataMutex);
+	}
 }
 
 bool Oximeter::getData(Data_t* data) {
@@ -26,41 +38,61 @@ bool Oximeter::getData(Data_t* data) {
     return false;
   }
 
-  switch (data->type) {
-    case SAMPLE_TYPE_SPO2:
-      if (buffer_size_spO2 == 0) {
-        return false;
-      }
-      data->data = buffer_spO2;
-      data->size = buffer_size_spO2;
-      buffer_size_spO2 = 0;
-      break;
-    case SAMPLE_TYPE_HEART_RATE:
-      if (buffer_size_heart_rate == 0) {
-        return false;
-      }
-      data->data = buffer_heart_rate;
-      data->size = buffer_size_heart_rate;
-      buffer_size_heart_rate = 0;
-      break;
-    case SAMPLE_TYPE_TEMPERATURE:
-      if (buffer_size_temperature == 0) {
-        return false;
-      }
-      data->data = buffer_temperature;
-      data->size = buffer_size_temperature;
-      buffer_size_temperature = 0;
-      break;
-    default:
-      return false;
+  // Take mutex to safely access shared data
+  if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+    bool result = false;
+    
+    switch (data->type) {
+      case SAMPLE_TYPE_SPO2:
+        if (buffer_size_spO2 == 0) {
+          result = false;
+        } else {
+          data->data = buffer_spO2;
+          data->size = buffer_size_spO2;
+          buffer_size_spO2 = 0;
+          result = true;
+        }
+        break;
+      case SAMPLE_TYPE_HEART_RATE:
+        if (buffer_size_heart_rate == 0) {
+          result = false;
+        } else {
+          data->data = buffer_heart_rate;
+          data->size = buffer_size_heart_rate;
+          buffer_size_heart_rate = 0;
+          result = true;
+        }
+        break;
+      case SAMPLE_TYPE_TEMPERATURE:
+        if (buffer_size_temperature == 0) {
+          result = false;
+        } else {
+          data->data = buffer_temperature;
+          data->size = buffer_size_temperature;
+          buffer_size_temperature = 0;
+          result = true;
+        }
+        break;
+      default:
+        result = false;
+    }
+
+    data->timestamp = to_ms_since_boot(get_absolute_time());
+    
+    xSemaphoreGive(dataMutex);
+    return result;
   }
-
-  data->timestamp = to_ms_since_boot(get_absolute_time());
-
-  return true;
+  
+  return false;
 }
 
 void Oximeter::Update() {
+  // This method is now deprecated - use StartTask() instead
+  // For backward compatibility, call UpdateInternal directly
+  UpdateInternal();
+}
+
+void Oximeter::UpdateInternal() {
   uint32_t aun_ir_buffer[BUFFER_SIZE_ALGORITHM]; //infrared LED sensor data
   uint32_t aun_red_buffer[BUFFER_SIZE_ALGORITHM];  //red LED sensor data
   
@@ -97,23 +129,76 @@ void Oximeter::Update() {
   float temperature = heartSensor.readTemperature();
 
   if (is_valid()) {
-    if (buffer_size_spO2 >= MAX_BUFFER_SIZE) {
-      shift_buffer(buffer_spO2, &buffer_size_spO2);
-    }
-    if (buffer_size_heart_rate >= MAX_BUFFER_SIZE) {
-      shift_buffer(buffer_heart_rate, &buffer_size_heart_rate);
-    }
-    if (buffer_size_temperature >= MAX_BUFFER_SIZE) {
-      shift_buffer(buffer_temperature, &buffer_size_temperature);
-    }
+    // Take mutex to safely update shared data
+    if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+      if (buffer_size_spO2 >= MAX_BUFFER_SIZE) {
+        shift_buffer(buffer_spO2, &buffer_size_spO2);
+      }
+      if (buffer_size_heart_rate >= MAX_BUFFER_SIZE) {
+        shift_buffer(buffer_heart_rate, &buffer_size_heart_rate);
+      }
+      if (buffer_size_temperature >= MAX_BUFFER_SIZE) {
+        shift_buffer(buffer_temperature, &buffer_size_temperature);
+      }
 
-    buffer_spO2[buffer_size_spO2++] = n_spo2;
-    buffer_heart_rate[buffer_size_heart_rate++] = n_heart_rate;
-    buffer_temperature[buffer_size_temperature++] = temperature;
+      buffer_spO2[buffer_size_spO2++] = n_spo2;
+      buffer_heart_rate[buffer_size_heart_rate++] = n_heart_rate;
+      buffer_temperature[buffer_size_temperature++] = temperature;
+      
+      xSemaphoreGive(dataMutex);
+    }
   }
 }
 
 bool Oximeter::is_valid() {
   return (ch_hr_valid && ch_spo2_valid);
+}
+
+void Oximeter::StartTask() {
+  if (taskHandle == nullptr && dataMutex != nullptr) {
+    taskRunning = true;
+    BaseType_t result = xTaskCreate(
+      OximeterTask,
+      "OximeterTask",
+      OXIMETER_TASK_STACK_SIZE,
+      this,
+      OXIMETER_TASK_PRIORITY,
+      &taskHandle
+    );
+    
+    if (result != pdPASS) {
+      printf("Failed to create Oximeter task\n");
+      taskRunning = false;
+      taskHandle = nullptr;
+    } else {
+      printf("Oximeter task created successfully\n");
+    }
+  }
+}
+
+void Oximeter::StopTask() {
+  if (taskHandle != nullptr) {
+    taskRunning = false;
+    vTaskDelete(taskHandle);
+    taskHandle = nullptr;
+    printf("Oximeter task stopped\n");
+  }
+}
+
+void Oximeter::OximeterTask(void* pvParameters) {
+  Oximeter* oximeter = static_cast<Oximeter*>(pvParameters);
+  TickType_t xLastWakeTime = xTaskGetTickCount();
+  
+  printf("Oximeter task started\n");
+  
+  while (oximeter->taskRunning) {
+    oximeter->UpdateInternal();
+    
+    // Wait for the next period
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(OXIMETER_UPDATE_PERIOD_MS));
+  }
+  
+  printf("Oximeter task ending\n");
+  vTaskDelete(nullptr);
 }
 

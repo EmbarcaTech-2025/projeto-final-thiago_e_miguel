@@ -2,6 +2,8 @@
 #include <cstring>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 #define MAX3010X_ADDRESS	0x57
 
@@ -122,4 +124,7 @@ class MAX3010X {
 		} sense_struct;
 
 		sense_struct sense;
+		
+		// Thread safety
+		SemaphoreHandle_t i2cMutex;
 };

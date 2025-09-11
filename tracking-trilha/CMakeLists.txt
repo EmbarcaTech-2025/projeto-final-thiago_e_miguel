@@ -25,8 +25,20 @@ endif()
 # ====================================================================================
 set(PICO_BOARD pico_w CACHE STRING "Board type")
 
+cmake_minimum_required(VERSION 3.12)
+
+# Set any variables required for importing libraries
+if (DEFINED ENV{FREERTOS_PATH})
+  SET(FREERTOS_PATH $ENV{FREERTOS_PATH})
+else()
+  SET(FREERTOS_PATH ${CMAKE_CURRENT_LIST_DIR}/lib/FreeRTOS)
+endif()
+
+message("FreeRTOS Kernel located in ${FREERTOS_PATH}")
+
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
+include(${FREERTOS_PATH}/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
 
 project(tracking-trilha C CXX ASM)
 
@@ -78,9 +90,14 @@ target_include_directories(tracking-trilha PRIVATE
 
 # Add any user requested libraries 
 target_link_libraries(tracking-trilha 
+        pico_stdlib
         hardware_i2c
-        
+        FreeRTOS-Kernel-Heap4
         )
 
 pico_add_extra_outputs(tracking-trilha)
+
+# if you have anything in "lib" folder then uncomment below - remember to add a CMakeLists.txt
+# file to the "lib" directory
+#add_subdirectory(lib/)
 
