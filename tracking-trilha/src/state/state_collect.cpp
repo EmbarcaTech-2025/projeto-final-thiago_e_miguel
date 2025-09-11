@@ -8,9 +8,7 @@ sample_t StateCollect::wanted_samples[] = {
     SAMPLE_TYPE_SPO2,
     SAMPLE_TYPE_HEART_RATE,
     SAMPLE_TYPE_TEMPERATURE,
-    SAMPLE_TYPE_ACCEL_X,
-    SAMPLE_TYPE_ACCEL_Y,
-    SAMPLE_TYPE_ACCEL_Z
+    SAMPLE_TYPE_ACCEL
 };
 
 Oled* StateCollect::oled = nullptr;

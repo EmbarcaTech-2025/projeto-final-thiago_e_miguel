@@ -24,7 +24,7 @@ int main(void) {
     analyzerConfig_t accelerometerConfig = {
         .thresholds = {0.0f, 0.5f, 0.75f, 1.2f, 1.5f},
         .sensorType = SENSOR_TYPE_ACCELEROMETER,
-        .sampleType = SAMPLE_TYPE_ACCEL_X
+        .sampleType = SAMPLE_TYPE_ACCEL
     };
 
     Analyzer accelerometerAnalyzer = Analyzer(accelerometerConfig);

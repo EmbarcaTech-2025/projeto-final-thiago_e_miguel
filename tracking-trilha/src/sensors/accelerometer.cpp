@@ -1,6 +1,7 @@
 #include "accelerometer.h"
 #include <string.h>
 #include "utils.h"
+#include <math.h>
 
 Accelerometer::Accelerometer() : Sensor() {
   busy_wait_ms(500);
@@ -32,37 +33,25 @@ void Accelerometer::Update() {
     if (buffer_size_accel_z >= MAX_BUFFER_SIZE) {
       shift_buffer(buffer_accel_z, &buffer_size_accel_z);
     }
+    if (buffer_size_accel_magnitude >= MAX_BUFFER_SIZE) {
+      shift_buffer(buffer_accel_magnitude, &buffer_size_accel_magnitude);
+    }
     // Armazenar dados nos buffers
     buffer_accel_x[buffer_size_accel_x++] = calibrated_data.x;
     buffer_accel_y[buffer_size_accel_y++] = calibrated_data.y;
     buffer_accel_z[buffer_size_accel_z++] = calibrated_data.z;
+    buffer_accel_magnitude[buffer_size_accel_magnitude++] = sqrt(pow(calibrated_data.x, 2) + pow(calibrated_data.y, 2) + pow(calibrated_data.z, 2));
 }
 
 bool Accelerometer::getData(Data_t* data) {
     switch (data->type) {
-        case SAMPLE_TYPE_ACCEL_X:
-            if (buffer_size_accel_x == 0) {
+        case SAMPLE_TYPE_ACCEL:
+            if (buffer_size_accel_magnitude == 0) {
                 return false;
             }
-            data->data = buffer_accel_x;
-            data->size = buffer_size_accel_x;
-            buffer_size_accel_x = 0;
-            break;
-        case SAMPLE_TYPE_ACCEL_Y:
-            if (buffer_size_accel_y == 0) {
-                return false;
-            }
-            data->data = buffer_accel_y;
-            data->size = buffer_size_accel_y;
-            buffer_size_accel_y = 0;
-            break;
-        case SAMPLE_TYPE_ACCEL_Z:
-            if (buffer_size_accel_z == 0) {
-                return false;
-            }
-            data->data = buffer_accel_z;
-            data->size = buffer_size_accel_z;
-            buffer_size_accel_z = 0;
+            data->data = buffer_accel_magnitude;
+            data->size = buffer_size_accel_magnitude;
+            buffer_size_accel_magnitude = 0;
             break;
         default:
             return false;
