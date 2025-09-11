@@ -6,6 +6,9 @@
 #include "MAX3010X.h"
 #include "sensor.h"
 #include "algorithm_by_RF.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
 
 #define PIN_WIRE_SDA_OXI 0
 #define PIN_WIRE_SCL_OXI 1
@@ -14,14 +17,25 @@
 #define MAX3010X_ADDRESS	0x57
 #define BUFFER_SIZE_ALGORITHM 25  // only for algorithm_by_RF.h - reduced for faster processing
 
+// FreeRTOS task configuration
+#define OXIMETER_TASK_PRIORITY (tskIDLE_PRIORITY + 2)
+#define OXIMETER_TASK_STACK_SIZE 2048
+#define OXIMETER_UPDATE_PERIOD_MS 1000  // Update every 1 second
+
 class Oximeter : public Sensor {
   public:
     Oximeter();
+    ~Oximeter();
 
     void Update();
     bool getData(Data_t* data);
+    void StartTask();
+    void StopTask();
+    
   private:
     bool is_valid();
+    static void OximeterTask(void* pvParameters);
+    void UpdateInternal();
 
     float buffer_spO2[MAX_BUFFER_SIZE];  //SPO2 value
     float buffer_heart_rate[MAX_BUFFER_SIZE];  //Heart rate value
@@ -34,4 +48,9 @@ class Oximeter : public Sensor {
     int32_t n_heart_rate; //heart rate value
     int8_t  ch_hr_valid;  //indicator to show if the heart rate calculation is valid
     float n_spo2;
+    
+    // FreeRTOS task management
+    TaskHandle_t taskHandle;
+    SemaphoreHandle_t dataMutex;
+    bool taskRunning;
 };

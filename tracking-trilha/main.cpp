@@ -6,11 +6,15 @@
 #include "state_collect.h"
 #include "analyzer.h"
 #include "oled.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define TICK_PERIOD_MS 100 // ms
 
 int main(void) {
     stdio_init_all();
+    sleep_ms(5000);
+    printf("Starting main...\n");
 
     StateCollect stateCollect;
     Oximeter oximeter = Oximeter();
@@ -55,10 +59,21 @@ int main(void) {
 
     stateCollect.setOled(&oled);
 
-	while (1) {
-        stateCollect.Update();
+    // Start the oximeter task
+    sleep_ms(1000);
+    printf("Starting oximeter task...\n");
+    oximeter.StartTask();
 
-        sleep_ms(TICK_PERIOD_MS);
-	}
-	return 0;
+    // Start the state collection task
+    sleep_ms(500);
+    printf("Starting state collection task...\n");
+    stateCollect.StartTask();
+
+    // Start the FreeRTOS scheduler
+    printf("Starting FreeRTOS scheduler...\n");
+    vTaskStartScheduler();
+
+    // This should never be reached
+    printf("ERROR: FreeRTOS scheduler stopped unexpectedly!\n");
+    return 0;
 }

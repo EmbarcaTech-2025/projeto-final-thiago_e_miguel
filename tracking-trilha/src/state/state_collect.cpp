@@ -16,7 +16,13 @@ sample_t StateCollect::wanted_samples[] = {
 Oled* StateCollect::oled = nullptr;
 
 StateCollect::StateCollect() : State() {
-   
+   // Initialize FreeRTOS components
+   taskHandle = nullptr;
+   taskRunning = false;
+}
+
+StateCollect::~StateCollect() {
+   StopTask();
 }
 
 void StateCollect::PrintOled(int line_index, const char* text) {
@@ -26,11 +32,20 @@ void StateCollect::PrintOled(int line_index, const char* text) {
 }
 
 void StateCollect::Update() {
+    // This method is now deprecated - use StartTask() instead
+    // For backward compatibility, call UpdateInternal directly
+    UpdateInternal();
+}
+
+void StateCollect::UpdateInternal() {
     PrintOled(0, "Coletando...     ");
 
     for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
         if (sensorArray[i] != nullptr) {
-            sensorArray[i]->Update();
+            // Skip oximeter update as it runs in its own task
+            if (i != SENSOR_TYPE_OXIMETER) {
+                sensorArray[i]->Update();
+            }
         }
     }
 
@@ -76,4 +91,52 @@ void StateCollect::Pause() {
 
 void StateCollect::Resume() {
     // Resume implementation
+}
+
+void StateCollect::StartTask() {
+    if (taskHandle == nullptr) {
+        taskRunning = true;
+        BaseType_t result = xTaskCreate(
+            StateTask,
+            "StateTask",
+            STATE_TASK_STACK_SIZE,
+            this,
+            STATE_TASK_PRIORITY,
+            &taskHandle
+        );
+        
+        if (result != pdPASS) {
+            printf("Failed to create State task\n");
+            taskRunning = false;
+            taskHandle = nullptr;
+        } else {
+            printf("State task created successfully\n");
+        }
+    }
+}
+
+void StateCollect::StopTask() {
+    if (taskHandle != nullptr) {
+        taskRunning = false;
+        vTaskDelete(taskHandle);
+        taskHandle = nullptr;
+        printf("State task stopped\n");
+    }
+}
+
+void StateCollect::StateTask(void* pvParameters) {
+    StateCollect* stateCollect = static_cast<StateCollect*>(pvParameters);
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    
+    printf("State task started\n");
+    
+    while (stateCollect->taskRunning) {
+        stateCollect->UpdateInternal();
+        
+        // Wait for the next period
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(STATE_UPDATE_PERIOD_MS));
+    }
+    
+    printf("State task ending\n");
+    vTaskDelete(nullptr);
 }

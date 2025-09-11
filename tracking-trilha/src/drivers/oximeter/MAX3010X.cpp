@@ -129,6 +129,9 @@ MAX3010X::MAX3010X(i2c_inst_t* i2c_type, uint8_t SDApin , uint8_t SCLKpin, uint3
     _SClkPin = SCLKpin;
     _SDataPin = SDApin;
     _CLKSpeed = i2cSpeed;
+    
+    // Initialize thread safety
+    i2cMutex = xSemaphoreCreateMutex();
 }
 
 /**
@@ -637,58 +640,43 @@ uint16_t MAX3010X::check(void) {
 		// For this example we are just doing Red and IR (3 bytes each)
 		int bytesLeftToRead = numberOfSamples * activeLEDs * 3;
 
-		// //Get ready to read a burst of data from the FIFO register
-		i2c_write_blocking(_i2c, _i2caddr, &REG_FIFODATA, 1, true);
-		// _i2cPort->beginTransmission(MAX30105_ADDRESS);
-		// _i2cPort->write(MAX30105_FIFODATA);
-		// _i2cPort->endTransmission();
+		// Protect FIFO reading with mutex
+		if (xSemaphoreTake(i2cMutex, portMAX_DELAY) == pdTRUE) {
+			// //Get ready to read a burst of data from the FIFO register
+			i2c_write_blocking(_i2c, _i2caddr, &REG_FIFODATA, 1, true);
+			// _i2cPort->beginTransmission(MAX30105_ADDRESS);
+			// _i2cPort->write(MAX30105_FIFODATA);
+			// _i2cPort->endTransmission();
 
-		// We may need to read as many as 288 bytes so we read in blocks no larger than I2C_BUFFER_LENGTH
-		//I2C_BUFFER_LENGTH changes based on the platform. 64 bytes for SAMD21, 32 bytes for Uno.
-		//Wire.requestFrom() is limited to BUFFER_LENGTH which is 32 on the Uno
-		while (bytesLeftToRead > 0) {
-			int toGet = bytesLeftToRead;
-			if (toGet > I2C_BUFFER_LENGTH) {
-				//If toGet is 32 this is bad because we read 6 bytes (Red+IR * 3 = 6) at a time
-				//32 % 6 = 2 left over. We don't want to request 32 bytes, we want to request 30.
-				//32 % 9 (Red+IR+GREEN) = 5 left over. We want to request 27.
+			// We may need to read as many as 288 bytes so we read in blocks no larger than I2C_BUFFER_LENGTH
+			//I2C_BUFFER_LENGTH changes based on the platform. 64 bytes for SAMD21, 32 bytes for Uno.
+			//Wire.requestFrom() is limited to BUFFER_LENGTH which is 32 on the Uno
+			while (bytesLeftToRead > 0) {
+				int toGet = bytesLeftToRead;
+				if (toGet > I2C_BUFFER_LENGTH) {
+					//If toGet is 32 this is bad because we read 6 bytes (Red+IR * 3 = 6) at a time
+					//32 % 6 = 2 left over. We don't want to request 32 bytes, we want to request 30.
+					//32 % 9 (Red+IR+GREEN) = 5 left over. We want to request 27.
 
-				// Trim toGet to be a multiple of the samples we need to read.
-				toGet = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (activeLEDs * 3));
-			}
+					// Trim toGet to be a multiple of the samples we need to read.
+					toGet = I2C_BUFFER_LENGTH - (I2C_BUFFER_LENGTH % (activeLEDs * 3));
+				}
 
-			bytesLeftToRead -= toGet;
+				bytesLeftToRead -= toGet;
 
-			// Request toGet number of bytes from sensor
-			int index = 0;
-			// i2c_write_blocking(_i2c, _i2caddr, &REG_FIFODATA, 1, true);
-			i2c_read_blocking(_i2c, _i2caddr, readMany, toGet, false);
+				// Request toGet number of bytes from sensor
+				int index = 0;
+				// i2c_write_blocking(_i2c, _i2caddr, &REG_FIFODATA, 1, true);
+				i2c_read_blocking(_i2c, _i2caddr, readMany, toGet, false);
 
-			while (toGet > 0) {
-				sense.head++; // Advance the head of the storage struct
-				sense.head %= STORAGE_SIZE;
+				while (toGet > 0) {
+					sense.head++; // Advance the head of the storage struct
+					sense.head %= STORAGE_SIZE;
 
-				uint8_t temp[sizeof(uint32_t)]; // Array of 4 bytes that we will convert into long
-				uint32_t tempLong;
+					uint8_t temp[sizeof(uint32_t)]; // Array of 4 bytes that we will convert into long
+					uint32_t tempLong;
 
-				// Burst read three bytes - RED
-				temp[3] = 0;
-				temp[2] = readMany[index++];
-				temp[1] = readMany[index++];
-				temp[0] = readMany[index++];
-
-				// Convert array to long
-				std::memcpy(&tempLong, temp, sizeof(tempLong));
-				
-				// Zero out all but 18 bits
-				tempLong &= 0x3FFFF;
-				
-				// Store this reading into the sense array
-				sense.red[sense.head] = tempLong;
-
-				if (activeLEDs > 1) 
-				{
-					// Burst read three more bytes - IR
+					// Burst read three bytes - RED
 					temp[3] = 0;
 					temp[2] = readMany[index++];
 					temp[1] = readMany[index++];
@@ -697,32 +685,51 @@ uint16_t MAX3010X::check(void) {
 					// Convert array to long
 					std::memcpy(&tempLong, temp, sizeof(tempLong));
 					
-					// Zero out all 18 bits
+					// Zero out all but 18 bits
 					tempLong &= 0x3FFFF;
-
-					sense.IR[sense.head] = tempLong;
-				}
-
-				if (activeLEDs > 2) 
-				{
-					// Burst read three more bytes - IR
-					temp[3] = 0;
-					temp[2] = readMany[index++];
-					temp[1] = readMany[index++];
-					temp[0] = readMany[index++];
-
-					// Convert array to long
-					std::memcpy(&tempLong, temp, sizeof(tempLong));
 					
-					// Zero out all 18 bits
-					tempLong &= 0x3FFFF;
+					// Store this reading into the sense array
+					sense.red[sense.head] = tempLong;
 
-					sense.green[sense.head] = tempLong;
+					if (activeLEDs > 1) 
+					{
+						// Burst read three more bytes - IR
+						temp[3] = 0;
+						temp[2] = readMany[index++];
+						temp[1] = readMany[index++];
+						temp[0] = readMany[index++];
+
+						// Convert array to long
+						std::memcpy(&tempLong, temp, sizeof(tempLong));
+						
+						// Zero out all 18 bits
+						tempLong &= 0x3FFFF;
+
+						sense.IR[sense.head] = tempLong;
+					}
+
+					if (activeLEDs > 2) 
+					{
+						// Burst read three more bytes - IR
+						temp[3] = 0;
+						temp[2] = readMany[index++];
+						temp[1] = readMany[index++];
+						temp[0] = readMany[index++];
+
+						// Convert array to long
+						std::memcpy(&tempLong, temp, sizeof(tempLong));
+						
+						// Zero out all 18 bits
+						tempLong &= 0x3FFFF;
+
+						sense.green[sense.head] = tempLong;
+					}
+					
+
+					toGet -= activeLEDs * 3; 
 				}
-				
-
-				toGet -= activeLEDs * 3; 
 			}
+			xSemaphoreGive(i2cMutex);
 		}
 	}
 	return (numberOfSamples);
@@ -768,18 +775,23 @@ void MAX3010X::bitMask(uint8_t reg, uint8_t mask, uint8_t thing) {
 }
 
 uint8_t MAX3010X::readRegister(uint8_t address, uint8_t reg) {
-	uint8_t res;
-	i2c_write_blocking(_i2c, address, &reg, 1, true);
-	i2c_read_blocking(_i2c, address, &res, 1, false);
+	uint8_t res = 0;
+	
+	if (xSemaphoreTake(i2cMutex, portMAX_DELAY) == pdTRUE) {
+		i2c_write_blocking(_i2c, address, &reg, 1, true);
+		i2c_read_blocking(_i2c, address, &res, 1, false);
+		xSemaphoreGive(i2cMutex);
+	}
 
 	return res;
 }
 
 void MAX3010X::writeRegister(uint8_t address, uint8_t reg, uint8_t val) {
-	uint8_t buf[2];
-	buf[0] = reg;
-	buf[1] = val;
-	i2c_write_blocking(_i2c, address, buf, 2, true);
-
-	// i2c_write_blocking(_i2c, address, &val, 1, true);
+	if (xSemaphoreTake(i2cMutex, portMAX_DELAY) == pdTRUE) {
+		uint8_t buf[2];
+		buf[0] = reg;
+		buf[1] = val;
+		i2c_write_blocking(_i2c, address, buf, 2, true);
+		xSemaphoreGive(i2cMutex);
+	}
 }
