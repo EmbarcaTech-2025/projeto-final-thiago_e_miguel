@@ -6,9 +6,9 @@
 #include "sensor.h"
 #include "imu6050.h"
 
-#define PIN_WIRE_SDA_ACCEL 0
-#define PIN_WIRE_SCL_ACCEL 1
-#define I2C_PORT_ACCEL i2c0
+#define PIN_WIRE_SDA_ACCEL 2
+#define PIN_WIRE_SCL_ACCEL 3
+#define I2C_PORT_ACCEL i2c1
 
 class Accelerometer : public Sensor {
   public:

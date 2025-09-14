@@ -51,6 +51,7 @@ add_executable(tracking-trilha main.cpp
     src/drivers/oximeter/MAX3010X.cpp
     src/drivers/oximeter/algorithm_by_RF.cpp
     src/drivers/accelerometer/imu6050.cpp
+    src/drivers/gps/GPS_GY-NEO6MV2.cpp
     src/sensors/oximeter.cpp
     src/sensors/accelerometer.cpp
     src/utils/utils.cpp
@@ -58,6 +59,7 @@ add_executable(tracking-trilha main.cpp
     src/state/state_collect.cpp
     src/analyzer/analyzer.cpp
     src/drivers/display_oled/ssd1306_i2c.cpp
+    src/sensors/gps.cpp
     src/drivers/display_oled/display_oled.cpp
     src/display/oled.cpp
 )
@@ -80,6 +82,7 @@ target_include_directories(tracking-trilha PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/include/drivers
         ${CMAKE_CURRENT_LIST_DIR}/include/drivers/oximeter
         ${CMAKE_CURRENT_LIST_DIR}/include/drivers/accelerometer
+        ${CMAKE_CURRENT_LIST_DIR}/include/drivers/gps
         ${CMAKE_CURRENT_LIST_DIR}/include/sensors
         ${CMAKE_CURRENT_LIST_DIR}/include/utils
         ${CMAKE_CURRENT_LIST_DIR}/include/state
@@ -90,10 +93,11 @@ target_include_directories(tracking-trilha PRIVATE
 
 # Add any user requested libraries 
 target_link_libraries(tracking-trilha 
-        pico_stdlib
-        hardware_i2c
-        FreeRTOS-Kernel-Heap4
-        )
+  pico_stdlib
+  hardware_i2c
+  FreeRTOS-Kernel-Heap4
+  hardware_uart
+)
 
 pico_add_extra_outputs(tracking-trilha)
 
