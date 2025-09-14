@@ -26,7 +26,7 @@ public:
     inline bool QuitRequested() const { return quitRequested; }
 protected:
     Sensor* sensorArray[SENSOR_TYPE_QTT];
-    Analyzer* analyzerArray[SENSOR_TYPE_QTT];
+    Analyzer* analyzerArray[SAMPLE_TYPE_QTT];
 
     bool popRequested;
     bool quitRequested;

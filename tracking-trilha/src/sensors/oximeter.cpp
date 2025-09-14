@@ -1,12 +1,16 @@
 #include "oximeter.h"
 #include "utils.h"
+#include "hardware/clocks.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "../../include/utils/debug_printf.h"
 
 MAX3010X heartSensor(I2C_PORT_OXI, PIN_WIRE_SDA_OXI, PIN_WIRE_SCL_OXI, I2C_SPEED_FAST);
 
 Oximeter::Oximeter() : Sensor() {
   busy_wait_ms(500);
 	while (heartSensor.begin() != true) {
-		printf("MAX30102 not connect r fail load calib coeff \r\n");
+		PRINTF_DEBUG("MAX30102 not connect r fail load calib coeff \r\n");
 		busy_wait_ms(500);
 	}
 
@@ -19,6 +23,10 @@ Oximeter::Oximeter() : Sensor() {
 	int pulseWidth = 411; //Options: 69, 118, 215, 411
 	int adcRange = 4096; //Options: 2048, 4096, 8192, 16384
 	heartSensor.setup(powerLevel, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
+	
+	// Initialize validation flags
+	ch_spo2_valid = 0;
+	ch_hr_valid = 0;
 	
 	// Initialize FreeRTOS components
 	taskHandle = nullptr;
@@ -45,8 +53,10 @@ bool Oximeter::getData(Data_t* data) {
     switch (data->type) {
       case SAMPLE_TYPE_SPO2:
         if (buffer_size_spO2 == 0) {
+          PRINTF_DEBUG("No SPO2 data available\n");
           result = false;
         } else {
+          PRINTF_DEBUG("Consuming %d SPO2 samples\n", buffer_size_spO2);
           data->data = buffer_spO2;
           data->size = buffer_size_spO2;
           buffer_size_spO2 = 0;
@@ -55,8 +65,10 @@ bool Oximeter::getData(Data_t* data) {
         break;
       case SAMPLE_TYPE_HEART_RATE:
         if (buffer_size_heart_rate == 0) {
+          PRINTF_DEBUG("No HEART_RATE data available\n");
           result = false;
         } else {
+          PRINTF_DEBUG("Consuming %d HEART_RATE samples\n", buffer_size_heart_rate);
           data->data = buffer_heart_rate;
           data->size = buffer_size_heart_rate;
           buffer_size_heart_rate = 0;
@@ -65,8 +77,10 @@ bool Oximeter::getData(Data_t* data) {
         break;
       case SAMPLE_TYPE_TEMPERATURE:
         if (buffer_size_temperature == 0) {
+          PRINTF_DEBUG("No TEMPERATURE data available\n");
           result = false;
         } else {
+          PRINTF_DEBUG("Consuming %d TEMPERATURE samples\n", buffer_size_temperature);
           data->data = buffer_temperature;
           data->size = buffer_size_temperature;
           buffer_size_temperature = 0;
@@ -89,12 +103,14 @@ bool Oximeter::getData(Data_t* data) {
 void Oximeter::Update() {
   // This method is now deprecated - use StartTask() instead
   // For backward compatibility, call UpdateInternal directly
-  UpdateInternal();
+  // UpdateInternal();
 }
 
 void Oximeter::UpdateInternal() {
   uint32_t aun_ir_buffer[BUFFER_SIZE_ALGORITHM]; //infrared LED sensor data
   uint32_t aun_red_buffer[BUFFER_SIZE_ALGORITHM];  //red LED sensor data
+
+  PRINTF_DEBUG("Oximeter Time: %llu\n", get_absolute_time());
   
   // Collect samples with minimal delay - use FIFO data when available
   for(int i=0;i<BUFFER_SIZE_ALGORITHM;i++) { //store the samples in the memory
@@ -109,6 +125,7 @@ void Oximeter::UpdateInternal() {
       aun_ir_buffer[i] = heartSensor.getIR();
     }
     // Small delay to allow sensor to collect new samples
+    //vTaskDelay(pdMS_TO_TICKS(1));
     busy_wait_us(625); // 625us = 1/1600Hz for 1600Hz sample rate
   }
 
@@ -167,11 +184,11 @@ void Oximeter::StartTask() {
     );
     
     if (result != pdPASS) {
-      printf("Failed to create Oximeter task\n");
+      PRINTF_DEBUG("Failed to create Oximeter task\n");
       taskRunning = false;
       taskHandle = nullptr;
     } else {
-      printf("Oximeter task created successfully\n");
+      PRINTF_DEBUG("Oximeter task created successfully\n");
     }
   }
 }
@@ -181,7 +198,7 @@ void Oximeter::StopTask() {
     taskRunning = false;
     vTaskDelete(taskHandle);
     taskHandle = nullptr;
-    printf("Oximeter task stopped\n");
+    PRINTF_DEBUG("Oximeter task stopped\n");
   }
 }
 
@@ -189,16 +206,26 @@ void Oximeter::OximeterTask(void* pvParameters) {
   Oximeter* oximeter = static_cast<Oximeter*>(pvParameters);
   TickType_t xLastWakeTime = xTaskGetTickCount();
   
-  printf("Oximeter task started\n");
+  PRINTF_DEBUG("Oximeter task started\n");
   
   while (oximeter->taskRunning) {
+    PRINTF_DEBUG("Oximeter task time: %llu\n", get_absolute_time());
+    
+    // Check stack usage
+    UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(nullptr);
+    PRINTF_DEBUG("Oximeter task stack high water mark: %d\n", stackHighWaterMark);
+    
+    if (stackHighWaterMark < 100) {
+        PRINTF_DEBUG("WARNING: Oximeter task stack is running low!\n");
+    }
+    
     oximeter->UpdateInternal();
     
     // Wait for the next period
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(OXIMETER_UPDATE_PERIOD_MS));
   }
   
-  printf("Oximeter task ending\n");
+  PRINTF_DEBUG("Oximeter task ending\n");
   vTaskDelete(nullptr);
 }
 

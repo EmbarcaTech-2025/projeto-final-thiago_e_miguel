@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "include/utils/debug_printf.h"
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "oximeter.h"
@@ -11,12 +12,14 @@
 #ifdef USE_GPS
 #include "gps.h"
 #endif
+#include "SD.h"
+
 #define TICK_PERIOD_MS 100 // ms
 
 int main(void) {
     stdio_init_all();
     sleep_ms(5000);
-    printf("Starting main...\n");
+    PRINTF_DEBUG("Starting main...\n");
 
     StateCollect stateCollect;
     Oximeter oximeter = Oximeter();
@@ -24,12 +27,15 @@ int main(void) {
 #ifdef USE_GPS
     GPS gps = GPS();
 #endif
+    SD sd = SD();
+
+    stateCollect.setSD(&sd);
 
 
     analyzerConfig_t accelerometerConfig = {
         .thresholds = {0.0f, 0.5f, 0.75f, 1.2f, 1.5f},
         .sensorType = SENSOR_TYPE_ACCELEROMETER,
-        .sampleType = SAMPLE_TYPE_ACCEL_X
+        .sampleType = SAMPLE_TYPE_ACCEL
     };
 
     Analyzer accelerometerAnalyzer = Analyzer(accelerometerConfig);
@@ -90,6 +96,14 @@ int main(void) {
 
     Analyzer heartRateAnalyzer = Analyzer(heartRateConfig);
 
+    analyzerConfig_t temperatureConfig = {
+        .thresholds = {0.0f, 35.0f, 37.0f, 39.0f, 41.0f},
+        .sensorType = SENSOR_TYPE_OXIMETER,
+        .sampleType = SAMPLE_TYPE_TEMPERATURE
+    };
+    
+    Analyzer temperatureAnalyzer = Analyzer(temperatureConfig); 
+
     stateCollect.AddSensor(&oximeter);
     stateCollect.AddSensor(&accelerometer);
 #ifdef USE_GPS
@@ -106,7 +120,11 @@ int main(void) {
     stateCollect.AddAnalyzer(&gpsSpeedAnalyzer);
 #endif
     stateCollect.AddAnalyzer(&heartRateAnalyzer);
+  
     // Oled oled;
+    stateCollect.AddAnalyzer(&temperatureAnalyzer);
+
+    stateCollect.setSamplesFilename("samples.csv");
 
     // oled.Clear();
 
@@ -114,19 +132,19 @@ int main(void) {
 
     // Start the oximeter task
     sleep_ms(1000);
-    printf("Starting oximeter task...\n");
+    PRINTF_DEBUG("Starting oximeter task...\n");
     oximeter.StartTask();
 
     // Start the state collection task
     sleep_ms(500);
-    printf("Starting state collection task...\n");
+    PRINTF_DEBUG("Starting state collection task...\n");
     stateCollect.StartTask();
 
     // Start the FreeRTOS scheduler
-    printf("Starting FreeRTOS scheduler...\n");
+    PRINTF_DEBUG("Starting FreeRTOS scheduler...\n");
     vTaskStartScheduler();
 
     // This should never be reached
-    printf("ERROR: FreeRTOS scheduler stopped unexpectedly!\n");
+    PRINTF_DEBUG("ERROR: FreeRTOS scheduler stopped unexpectedly!\n");
     return 0;
 }

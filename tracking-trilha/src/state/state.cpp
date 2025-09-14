@@ -1,8 +1,11 @@
 #include "state.h"
+#include "debug_printf.h"
 
 State::State() : popRequested(false), quitRequested(false) {
     for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
         sensorArray[i] = nullptr;
+    }
+    for (size_t i = 0; i < SAMPLE_TYPE_QTT; i++) {
         analyzerArray[i] = nullptr;
     }
 }
@@ -28,7 +31,7 @@ Sensor* State::GetSensor(sensor_t type) {
 
 bool State::AddAnalyzer(Analyzer* analyzer) {
 
-    for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
+    for (size_t i = 0; i < SAMPLE_TYPE_QTT; i++) {
         if (analyzerArray[i] == nullptr) {
             analyzerArray[i] = analyzer;
             return true;
@@ -38,8 +41,7 @@ bool State::AddAnalyzer(Analyzer* analyzer) {
 }
 
 Analyzer* State::GetAnalyzer(sensor_t type, sample_t sampleType) {
-
-    for (size_t i = 0; i < SENSOR_TYPE_QTT; i++) {
+    for (size_t i = 0; i < SAMPLE_TYPE_QTT; i++) {
         if (analyzerArray[i] != nullptr && analyzerArray[i]->GetSensorType() == type && analyzerArray[i]->GetSampleType() == sampleType) {
             return analyzerArray[i];
         }
