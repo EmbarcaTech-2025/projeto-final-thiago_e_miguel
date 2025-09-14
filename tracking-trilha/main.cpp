@@ -8,7 +8,9 @@
 #include "oled.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
+#ifdef USE_GPS
+#include "gps.h"
+#endif
 #define TICK_PERIOD_MS 100 // ms
 
 int main(void) {
@@ -19,6 +21,9 @@ int main(void) {
     StateCollect stateCollect;
     Oximeter oximeter = Oximeter();
     Accelerometer accelerometer = Accelerometer();
+#ifdef USE_GPS
+    GPS gps = GPS();
+#endif
 
 
     analyzerConfig_t accelerometerConfig = {
@@ -36,7 +41,47 @@ int main(void) {
     };
     
     Analyzer oximeterAnalyzer = Analyzer(oximeterConfig);
+#ifdef USE_GPS
+    analyzerConfig_t gpsLatitudeConfig = {
+        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+        .sensorType = SENSOR_TYPE_GPS,
+        .sampleType = SAMPLE_TYPE_LATITUDE
+    };
 
+    Analyzer gpsLatitudeAnalyzer = Analyzer(gpsLatitudeConfig);
+
+    analyzerConfig_t gpsLongitudeConfig = {
+        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+        .sensorType = SENSOR_TYPE_GPS,
+        .sampleType = SAMPLE_TYPE_LONGITUDE
+    };
+
+    Analyzer gpsLongitudeAnalyzer = Analyzer(gpsLongitudeConfig);
+
+    analyzerConfig_t gpsAltitudeConfig = {
+        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+        .sensorType = SENSOR_TYPE_GPS,
+        .sampleType = SAMPLE_TYPE_ALTITUDE
+    };
+
+    Analyzer gpsAltitudeAnalyzer = Analyzer(gpsAltitudeConfig);
+
+    analyzerConfig_t gpsSatellitesConfig = {
+        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+        .sensorType = SENSOR_TYPE_GPS,
+        .sampleType = SAMPLE_TYPE_SATELLITES
+    };
+
+    Analyzer gpsSatellitesAnalyzer = Analyzer(gpsSatellitesConfig);
+
+    analyzerConfig_t gpsSpeedConfig = {
+        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+        .sensorType = SENSOR_TYPE_GPS,
+        .sampleType = SAMPLE_TYPE_SPEED_KPH
+    };
+
+    Analyzer gpsSpeedAnalyzer = Analyzer(gpsSpeedConfig);
+#endif
     analyzerConfig_t heartRateConfig = {
         .thresholds = {0.0f, 60.0f, 100.0f, 140.0f, 180.0f},
         .sensorType = SENSOR_TYPE_OXIMETER,
@@ -47,17 +92,25 @@ int main(void) {
 
     stateCollect.AddSensor(&oximeter);
     stateCollect.AddSensor(&accelerometer);
+#ifdef USE_GPS
+    stateCollect.AddSensor(&gps);
+#endif
 
     stateCollect.AddAnalyzer(&oximeterAnalyzer);
     stateCollect.AddAnalyzer(&accelerometerAnalyzer);
-
+#ifdef USE_GPS
+    stateCollect.AddAnalyzer(&gpsLatitudeAnalyzer);
+    stateCollect.AddAnalyzer(&gpsLongitudeAnalyzer);
+    stateCollect.AddAnalyzer(&gpsAltitudeAnalyzer);
+    stateCollect.AddAnalyzer(&gpsSatellitesAnalyzer);
+    stateCollect.AddAnalyzer(&gpsSpeedAnalyzer);
+#endif
     stateCollect.AddAnalyzer(&heartRateAnalyzer);
+    // Oled oled;
 
-    Oled oled;
+    // oled.Clear();
 
-    oled.Clear();
-
-    stateCollect.setOled(&oled);
+    // stateCollect.setOled(&oled);
 
     // Start the oximeter task
     sleep_ms(1000);

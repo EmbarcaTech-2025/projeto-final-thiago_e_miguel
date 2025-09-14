@@ -73,6 +73,7 @@ char* GPS_GYNEO6MV2::getLastNMEA() {
 void GPS_GYNEO6MV2::update() {
   while (uart_is_readable(GPS_UART_ID)) {
     c = uart_getc(GPS_UART_ID);
+    printf("c: %c\n", c);
     if (c == '\n') {
       current_NMEA[strcspn(current_NMEA, "\r\n")] = '\0'; // Remove any trailing newline or carriage return
       strncpy(last_NMEA, current_NMEA, MAX_NMEA_SENTENCE_LENGTH);

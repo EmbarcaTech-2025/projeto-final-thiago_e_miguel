@@ -1,6 +1,6 @@
 #include "gps.h"
 
-GPS::GPS() : Sensor() {
+GPS::GPS() : Sensor(), gpsModule() {
     buffer_size_lat = 0;
     buffer_size_lon = 0;
     buffer_size_alt = 0;
@@ -10,6 +10,7 @@ GPS::GPS() : Sensor() {
 }
 
 void GPS::Update() {
+    printf("Updating GPS\n");
     gpsModule.update();
     if (
       gpsModule.hasNewNMEA() &&
@@ -19,6 +20,7 @@ void GPS::Update() {
       buffer_size_sat < MAX_BUFFER_SIZE &&
       buffer_size_spd < MAX_BUFFER_SIZE
     ) {
+        printf("New NMEA\n");
         float lat = gpsModule.getLatitude();
         float lon = gpsModule.getLongitude();
         float alt = gpsModule.getAltitude();
@@ -40,6 +42,8 @@ void GPS::Update() {
         if (spd != 0.0f) {
             buffer_spd[buffer_size_spd++] = spd;
         }
+    } else {
+        printf("No new NMEA\n");
     }
 }
 
