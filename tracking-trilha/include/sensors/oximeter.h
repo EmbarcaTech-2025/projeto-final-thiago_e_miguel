@@ -18,8 +18,8 @@
 #define BUFFER_SIZE_ALGORITHM 25  // only for algorithm_by_RF.h - reduced for faster processing
 
 // FreeRTOS task configuration
-#define OXIMETER_TASK_PRIORITY (tskIDLE_PRIORITY + 2)
-#define OXIMETER_TASK_STACK_SIZE 2048
+#define OXIMETER_TASK_PRIORITY (configMAX_PRIORITIES - 1)
+#define OXIMETER_TASK_STACK_SIZE 4096  // Increased from 2048 to prevent stack overflow
 #define OXIMETER_UPDATE_PERIOD_MS 1000  // Update every 1 second
 
 class Oximeter : public Sensor {

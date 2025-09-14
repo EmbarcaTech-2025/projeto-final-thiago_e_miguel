@@ -5,11 +5,16 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "SD.h"
 
 // FreeRTOS task configuration for StateCollect
-#define STATE_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
-#define STATE_TASK_STACK_SIZE 2048
+#define STATE_TASK_PRIORITY (configMAX_PRIORITIES - 2)
+#define STATE_TASK_STACK_SIZE 4096  // Increased from 2048 to prevent stack overflow
 #define STATE_UPDATE_PERIOD_MS 100  // Update every 100ms
+
+#define SAMPLES_FILENAME_SIZE 100
+#define SAMPLES_FILE_NAME "samples.csv"
+#define SAMPLES_FILE_HEADER "sensor_type,sample_type,timestamp,data,health_status\n"
 
 class StateCollect : public State {
 public:
@@ -21,7 +26,9 @@ public:
     virtual void Resume() override;
 
     inline void setOled(Oled* oledInstance) { oled = oledInstance; }
-    
+    inline void setSD(SD* sdInstance) { sd = sdInstance; }
+    inline void setSamplesFilename(const char* filename) { strncpy(samples_filename, filename, SAMPLES_FILENAME_SIZE); }
+
     // Task management methods
     void StartTask();
     void StopTask();
@@ -29,6 +36,8 @@ public:
 private:
   static sample_t wanted_samples[SAMPLE_TYPE_QTT];
   static Oled *oled;
+  static SD *sd;
+  static char samples_filename[SAMPLES_FILENAME_SIZE];
 
   void PrintOled(int line_index, const char* text);
   void UpdateInternal();

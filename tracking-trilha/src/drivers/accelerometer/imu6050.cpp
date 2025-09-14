@@ -1,4 +1,6 @@
 #include "imu6050.h"
+#include <stdio.h>
+#include "debug_printf.h"
 
 IMU6050::IMU6050(i2c_inst_t* i2c_type, uint8_t sdata , uint8_t sclk , uint32_t i2cSpeed, uint8_t i2cAddr) {
     _i2c = i2c_type;
@@ -42,18 +44,33 @@ bool IMU6050::begin() {
 }
 
 void IMU6050::read_imu6050(imu6050_data_t *data, const uint8_t *registers, uint8_t num_registers) {
+    // PRINTF_DEBUG("Read IMU6050\n");
     uint8_t buffer[6]; // Buffer para 6 bytes (3 eixos x 2 bytes cada)
     
     // Escrever endereço do primeiro registro
-    i2c_write_blocking(_i2c, _i2caddr, (uint8_t*)registers, 1, true);
+    // PRINTF_DEBUG("Write IMU6050\n");
+    int write_result = i2c_write_blocking(_i2c, _i2caddr, (uint8_t*)registers, 1, true);
+    if (write_result != 1) {
+        PRINTF_DEBUG("ERROR: I2C write failed, bytes written: %d\n", write_result);
+        return;
+    }
     
     // Ler dados
-    i2c_read_blocking(_i2c, _i2caddr, buffer, num_registers, false);
+    // PRINTF_DEBUG("Read IMU6050 Data\n");
+    int bytes_read = i2c_read_blocking(_i2c, _i2caddr, buffer, num_registers, false);
+    // PRINTF_DEBUG("Bytes read: %d\n", bytes_read);
+    // PRINTF_DEBUG("Read IMU6050 Data End\n");
+    
+    if (bytes_read != num_registers) {
+        PRINTF_DEBUG("ERROR: I2C read failed, expected %d bytes, got %d\n", num_registers, bytes_read);
+        return;
+    }
     
     // Converter bytes para valores de 16 bits
     data->x = (buffer[0] << 8) | buffer[1];
     data->y = (buffer[2] << 8) | buffer[3];
     data->z = (buffer[4] << 8) | buffer[5];
+    // PRINTF_DEBUG("Read IMU6050 End\n");
 }
 
 uint16_t IMU6050::read_imu6050_reg(const uint8_t *registers, uint8_t num_registers) {
@@ -73,6 +90,7 @@ uint16_t IMU6050::read_imu6050_reg(const uint8_t *registers, uint8_t num_registe
 }
 
 void IMU6050::read_accelerometer(imu6050_data_t *accel_data) {
+    //PRINTF_DEBUG("Read Accelerometer\n");
     uint8_t accel_reg = MPU_ACCEL_XOUT_H;
     read_imu6050(accel_data, &accel_reg, 6);
 }
