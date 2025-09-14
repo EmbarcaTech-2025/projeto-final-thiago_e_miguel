@@ -120,6 +120,57 @@ bool SD::readFromFile(const char* filePath, char* buffer, size_t bufferSize) {
     return true;
 }
 
+bool SD::readFromFileWithOffset(const char* filePath, char* buffer, size_t bufferSize, size_t offset, size_t* bytesRead) {
+    if (!isReady() || !buffer || bufferSize == 0) {
+        return false;
+    }
+    
+    char fullPath[64];
+    snprintf(fullPath, sizeof(fullPath), "%s/%s", mountPoint, filePath);
+    
+    FF_FILE* pxFile = ff_fopen(fullPath, "r");
+    if (!pxFile) {
+        return false;
+    }
+    
+    // Seek to offset
+    if (ff_fseek(pxFile, offset, SEEK_SET) != 0) {
+        ff_fclose(pxFile);
+        return false;
+    }
+    
+    size_t actualBytesRead = ff_fread(buffer, 1, bufferSize - 1, pxFile);
+    buffer[actualBytesRead] = '\0';
+    
+    if (bytesRead) {
+        *bytesRead = actualBytesRead;
+    }
+    
+    ff_fclose(pxFile);
+    return true;
+}
+
+size_t SD::getFileSize(const char* filePath) {
+    if (!isReady()) {
+        return 0;
+    }
+    
+    char fullPath[64];
+    snprintf(fullPath, sizeof(fullPath), "%s/%s", mountPoint, filePath);
+    
+    FF_FILE* pxFile = ff_fopen(fullPath, "r");
+    if (!pxFile) {
+        return 0;
+    }
+    
+    // Seek to end to get file size
+    ff_fseek(pxFile, 0, SEEK_END);
+    size_t fileSize = ff_ftell(pxFile);
+    
+    ff_fclose(pxFile);
+    return fileSize;
+}
+
 bool SD::fileExists(const char* filePath) {
     if (!isReady()) {
         return false;

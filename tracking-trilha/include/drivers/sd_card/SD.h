@@ -48,6 +48,12 @@ public:
     // Read data from file (caller must provide buffer and size)
     bool readFromFile(const char* filePath, char* buffer, size_t bufferSize);
     
+    // Read data from file with offset
+    bool readFromFileWithOffset(const char* filePath, char* buffer, size_t bufferSize, size_t offset, size_t* bytesRead);
+    
+    // Get file size
+    size_t getFileSize(const char* filePath);
+    
     // Check if file exists
     bool fileExists(const char* filePath);
     

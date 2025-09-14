@@ -13,6 +13,8 @@
 #include "gps.h"
 #endif
 #include "SD.h"
+#include <string.h>
+#include <stdlib.h>
 
 #define TICK_PERIOD_MS 100 // ms
 
@@ -29,100 +31,13 @@ int main(void) {
 #endif
     SD sd = SD();
 
-    stateCollect.setSD(&sd);
-
-
-    analyzerConfig_t accelerometerConfig = {
-        .thresholds = {0.0f, 0.5f, 0.75f, 1.2f, 1.5f},
-        .sensorType = SENSOR_TYPE_ACCELEROMETER,
-        .sampleType = SAMPLE_TYPE_ACCEL
-    };
-
-    Analyzer accelerometerAnalyzer = Analyzer(accelerometerConfig);
-
-    analyzerConfig_t oximeterConfig = {
-        .thresholds = {0.0f, 90.0f, 98.0f, 200.0f, 200.0f},
-        .sensorType = SENSOR_TYPE_OXIMETER,
-        .sampleType = SAMPLE_TYPE_SPO2
-    };
-    
-    Analyzer oximeterAnalyzer = Analyzer(oximeterConfig);
-#ifdef USE_GPS
-    analyzerConfig_t gpsLatitudeConfig = {
-        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-        .sensorType = SENSOR_TYPE_GPS,
-        .sampleType = SAMPLE_TYPE_LATITUDE
-    };
-
-    Analyzer gpsLatitudeAnalyzer = Analyzer(gpsLatitudeConfig);
-
-    analyzerConfig_t gpsLongitudeConfig = {
-        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-        .sensorType = SENSOR_TYPE_GPS,
-        .sampleType = SAMPLE_TYPE_LONGITUDE
-    };
-
-    Analyzer gpsLongitudeAnalyzer = Analyzer(gpsLongitudeConfig);
-
-    analyzerConfig_t gpsAltitudeConfig = {
-        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-        .sensorType = SENSOR_TYPE_GPS,
-        .sampleType = SAMPLE_TYPE_ALTITUDE
-    };
-
-    Analyzer gpsAltitudeAnalyzer = Analyzer(gpsAltitudeConfig);
-
-    analyzerConfig_t gpsSatellitesConfig = {
-        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-        .sensorType = SENSOR_TYPE_GPS,
-        .sampleType = SAMPLE_TYPE_SATELLITES
-    };
-
-    Analyzer gpsSatellitesAnalyzer = Analyzer(gpsSatellitesConfig);
-
-    analyzerConfig_t gpsSpeedConfig = {
-        .thresholds = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-        .sensorType = SENSOR_TYPE_GPS,
-        .sampleType = SAMPLE_TYPE_SPEED_KPH
-    };
-
-    Analyzer gpsSpeedAnalyzer = Analyzer(gpsSpeedConfig);
-#endif
-    analyzerConfig_t heartRateConfig = {
-        .thresholds = {0.0f, 60.0f, 100.0f, 140.0f, 180.0f},
-        .sensorType = SENSOR_TYPE_OXIMETER,
-        .sampleType = SAMPLE_TYPE_HEART_RATE
-    };
-
-    Analyzer heartRateAnalyzer = Analyzer(heartRateConfig);
-
-    analyzerConfig_t temperatureConfig = {
-        .thresholds = {0.0f, 35.0f, 37.0f, 39.0f, 41.0f},
-        .sensorType = SENSOR_TYPE_OXIMETER,
-        .sampleType = SAMPLE_TYPE_TEMPERATURE
-    };
-    
-    Analyzer temperatureAnalyzer = Analyzer(temperatureConfig); 
+    stateCollect.setSD(&sd); 
 
     stateCollect.AddSensor(&oximeter);
     stateCollect.AddSensor(&accelerometer);
 #ifdef USE_GPS
     stateCollect.AddSensor(&gps);
 #endif
-
-    stateCollect.AddAnalyzer(&oximeterAnalyzer);
-    stateCollect.AddAnalyzer(&accelerometerAnalyzer);
-#ifdef USE_GPS
-    stateCollect.AddAnalyzer(&gpsLatitudeAnalyzer);
-    stateCollect.AddAnalyzer(&gpsLongitudeAnalyzer);
-    stateCollect.AddAnalyzer(&gpsAltitudeAnalyzer);
-    stateCollect.AddAnalyzer(&gpsSatellitesAnalyzer);
-    stateCollect.AddAnalyzer(&gpsSpeedAnalyzer);
-#endif
-    stateCollect.AddAnalyzer(&heartRateAnalyzer);
-  
-    // Oled oled;
-    stateCollect.AddAnalyzer(&temperatureAnalyzer);
 
     stateCollect.setSamplesFilename("samples.csv");
 
