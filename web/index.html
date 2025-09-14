@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Trilha</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 Tracking Trilha</h1>
+            <p>Sistema para visualização de dados de sensores e configuração de thresholds</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <h2>📁 Upload de Arquivos</h2>
+                <div class="upload-container">
+                    <div class="upload-box">
+                        <label for="configFile" class="upload-label">
+                            <span class="upload-icon">⚙️</span>
+                            <span>Arquivo de Configuração (config.txt)</span>
+                        </label>
+                        <input type="file" id="configFile" accept=".txt" />
+                    </div>
+                    <div class="upload-box">
+                        <label for="dataFile" class="upload-label">
+                            <span class="upload-icon">📊</span>
+                            <span>Dados dos Sensores (CSV)</span>
+                        </label>
+                        <input type="file" id="dataFile" accept=".csv" />
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configuration Editor -->
+            <section class="config-section" id="configSection" style="display: none;">
+                <h2>⚙️ Editor de Configuração</h2>
+                <div class="config-editor">
+                    <div class="config-header">
+                        <h3>Configurações dos Analyzers</h3>
+                        <button id="addConfigBtn" class="btn btn-primary">+ Adicionar Configuração</button>
+                    </div>
+                    <div id="configList" class="config-list">
+                        <!-- Configurações serão inseridas aqui dinamicamente -->
+                    </div>
+                    <div class="config-actions">
+                        <button id="saveConfigBtn" class="btn btn-success">💾 Salvar Configuração</button>
+                        <button id="downloadConfigBtn" class="btn btn-secondary">⬇️ Download config.txt</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Visualization -->
+            <section class="visualization-section" id="visualizationSection" style="display: none;">
+                <h2>📊 Visualização de Dados</h2>
+                <div class="visualization-controls">
+                    <div class="filter-controls">
+                        <label for="sensorTypeFilter">Tipo de Sensor:</label>
+                        <select id="sensorTypeFilter">
+                            <option value="all">Todos</option>
+                            <option value="0">Oximeter</option>
+                            <option value="1">Accelerometer</option>
+                            <option value="2">GPS</option>
+                        </select>
+                        
+                        <label for="sampleTypeFilter">Tipo de Amostra:</label>
+                        <select id="sampleTypeFilter">
+                            <option value="all">Todos</option>
+                            <option value="0">SpO2</option>
+                            <option value="1">Heart Rate</option>
+                            <option value="2">Temperature</option>
+                            <option value="3">Latitude</option>
+                            <option value="4">Longitude</option>
+                            <option value="5">Altitude</option>
+                            <option value="6">Satellites</option>
+                            <option value="7">Speed KPH</option>
+                            <option value="8">Acceleration</option>
+                        </select>
+                        
+                        <button id="applyFiltersBtn" class="btn btn-primary">🔍 Aplicar Filtros</button>
+                        <button id="clearFiltersBtn" class="btn btn-secondary">🗑️ Limpar Filtros</button>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="healthStatusChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="data-summary">
+                    <h3>📈 Resumo dos Dados</h3>
+                    <div id="dataSummary" class="summary-grid">
+                        <!-- Resumo será inserido aqui dinamicamente -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

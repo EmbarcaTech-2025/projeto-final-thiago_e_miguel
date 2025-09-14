@@ -1,0 +1,17 @@
+# Configurações dos Analyzers
+# Formato: sensorType,sampleType,threshold1,threshold2,threshold3,threshold4,threshold5
+# sensorType: 0=OXIMETER, 1=ACCELEROMETER, 2=GPS
+# sampleType: 0=SPO2, 1=HEART_RATE, 2=TEMPERATURE, 3=LATITUDE, 4=LONGITUDE, 5=ALTITUDE, 6=SATELLITES, 7=SPEED_KPH, 8=ACCEL
+
+# Oximeter - SpO2
+0,0,0.0,90.0,98.0,200.0,200.0
+
+# Oximeter - Heart Rate
+0,1,0.0,60.0,100.0,140.0,180.0
+
+# Oximeter - Temperature
+0,2,0.0,35.0,37.0,39.0,41.0
+
+# Accelerometer - Acceleration
+1,8,0.0,0.5,0.75,1.2,1.5
+
