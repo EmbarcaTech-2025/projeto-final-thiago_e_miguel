@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define USE_GPS
+// #define USE_GPS
+// #define USE_SD
 
 #define MAX_BUFFER_SIZE 10
 

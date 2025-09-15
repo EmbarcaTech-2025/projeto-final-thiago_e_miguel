@@ -1,5 +1,6 @@
 #include "gps.h"
 
+#ifdef USE_GPS
 GPS::GPS() : Sensor(), gpsModule() {
     buffer_size_lat = 0;
     buffer_size_lon = 0;
@@ -80,3 +81,4 @@ bool GPS::getData(Data_t* data) {
       return false;
   }
 }
+#endif

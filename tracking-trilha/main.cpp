@@ -12,7 +12,9 @@
 #ifdef USE_GPS
 #include "gps.h"
 #endif
+#ifdef USE_SD
 #include "SD.h"
+#endif
 #include <string.h>
 #include <stdlib.h>
 
@@ -29,9 +31,10 @@ int main(void) {
 #ifdef USE_GPS
     GPS gps = GPS();
 #endif
+#ifdef USE_SD
     SD sd = SD();
-
-    stateCollect.setSD(&sd); 
+    stateCollect.setSD(&sd);
+#endif
 
     stateCollect.AddSensor(&oximeter);
     stateCollect.AddSensor(&accelerometer);
