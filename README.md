@@ -115,6 +115,10 @@ Tracking-Trilha é um sistema de monitoramento de saúde e atividade física des
 5. **Visualização**: Use os gráficos interativos para analisar os dados
 6. **Download**: Baixe os arquivos modificados após edição
 
+### Fluxo de Uso
+
+![fluxo de uso](tracking_trilha_trail_flow.png)
+
 ---
 
 ## 🔧 Configuração dos Sensores
