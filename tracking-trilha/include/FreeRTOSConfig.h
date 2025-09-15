@@ -70,7 +70,7 @@
 #define configMESSAGE_BUFFER_LENGTH_TYPE        size_t
 
 /* Memory allocation related definitions. */
-#define configSUPPORT_STATIC_ALLOCATION         0
+#define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
 #define configTOTAL_HEAP_SIZE                   (128*1024)
 #define configAPPLICATION_ALLOCATED_HEAP        0
@@ -104,7 +104,7 @@
 
 // #if FREE_RTOS_KERNEL_SMP // set by the RP2040 SMP port of FreeRTOS
 // /* SMP port only */
-// #define configNUMBER_OF_CORES                   2
+#define configNUMBER_OF_CORES                   2 
 // #define configTICK_CORE                         0
 // #define configRUN_MULTIPLE_PRIORITIES           1
 // #define configUSE_CORE_AFFINITY                 1
