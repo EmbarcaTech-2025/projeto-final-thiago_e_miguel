@@ -9,9 +9,11 @@ public:
   void setTone(uint32_t freq_hz, uint8_t duty_percent = 50);
   void stop(); // para o som de vez
   bool isPlaying() const;
+  inline uint64_t getStartTime() const { return start_time; }
 
 private:
   bool playing = false;
   uint slice_num = 0;
   uint gpio = 0;
+  uint64_t start_time = 0;
 };

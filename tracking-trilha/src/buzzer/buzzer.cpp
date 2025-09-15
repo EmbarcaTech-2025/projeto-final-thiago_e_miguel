@@ -21,6 +21,12 @@ void Buzzer::setTone(uint32_t freq_hz, uint8_t duty_percent) {
     stop();
     return;
   }
+  start_time = get_absolute_time();
+
+  if (isPlaying()) {
+    return;
+  }
+
   if (duty_percent > 100) duty_percent = 100;
 
   const uint64_t clk = clock_get_hz(clk_sys);

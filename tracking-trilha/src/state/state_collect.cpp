@@ -273,12 +273,18 @@ void StateCollect::UpdateInternal() {
                       if (sd != nullptr) {
                           sd->appendToFile(samples_filename, sd_data_str);
                       }
-                  } else {
-                    //printf("No analyzer found for sensor type: %d\n", sensor_type);
-                  }
-                  //printf("\n");
-              }
-          }
+                      if (buzzer != nullptr && (healthStatus == HEALTH_STATUS_CRITICAL_LOW || healthStatus == HEALTH_STATUS_CRITICAL_HIGH) ) {
+                          buzzer->setTone(1000, 50);
+                      }
+                    } else {
+                        //printf("No analyzer found for sensor type: %d\n", sensor_type);
+                    }
+                    //printf("\n");
+                }
+            }
+        }
+        if (buzzer != nullptr && (get_absolute_time() - buzzer->getStartTime() > 1000)) {
+            buzzer->stop();
         }
     }
 
