@@ -204,6 +204,7 @@ sample_t StateCollect::wanted_samples[] = {
 
 Oled* StateCollect::oled = nullptr;
 SD* StateCollect::sd = nullptr;
+Buzzer* StateCollect::buzzer = nullptr;
 char StateCollect::samples_filename[SAMPLES_FILENAME_SIZE] = SAMPLES_FILE_NAME;
 
 

@@ -6,6 +6,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "SD.h"
+#include "buzzer.h"
 
 // FreeRTOS task configuration for StateCollect
 #define STATE_TASK_PRIORITY (configMAX_PRIORITIES - 2)
@@ -27,6 +28,7 @@ public:
 
     inline void setOled(Oled* oledInstance) { oled = oledInstance; }
     inline void setSD(SD* sdInstance) { sd = sdInstance; }
+    inline void setBuzzer(Buzzer* buzzerInstance) { buzzer = buzzerInstance; }
     inline void setSamplesFilename(const char* filename) { strncpy(samples_filename, filename, SAMPLES_FILENAME_SIZE); }
 
     // Task management methods
@@ -37,6 +39,7 @@ private:
   static sample_t wanted_samples[SAMPLE_TYPE_QTT];
   static Oled *oled;
   static SD *sd;
+  static Buzzer *buzzer;
   static char samples_filename[SAMPLES_FILENAME_SIZE];
 
   void PrintOled(int line_index, const char* text);

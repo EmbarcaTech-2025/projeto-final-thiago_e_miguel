@@ -78,6 +78,7 @@ add_executable(tracking-trilha main.cpp
     src/display/oled.cpp
     src/drivers/sd_card/hw_config.c
     src/drivers/sd_card/SD.cpp
+    src/buzzer/buzzer.cpp
 )
 
 pico_set_program_name(tracking-trilha "tracking-trilha")
@@ -109,6 +110,7 @@ target_include_directories(tracking-trilha PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/lib/sd/src/Lab-Project-FreeRTOS-FAT/include
         ${CMAKE_CURRENT_LIST_DIR}/lib/sd/src/FreeRTOS+FAT+CLI/portable/RP2040
         ${CMAKE_CURRENT_LIST_DIR}/include/drivers/sd_card
+        ${CMAKE_CURRENT_LIST_DIR}/include/buzzer
 )
 
 # Add any user requested libraries 

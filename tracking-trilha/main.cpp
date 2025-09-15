@@ -15,6 +15,7 @@
 #ifdef USE_SD
 #include "SD.h"
 #endif
+#include "buzzer.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -41,6 +42,9 @@ int main(void) {
 #ifdef USE_GPS
     stateCollect.AddSensor(&gps);
 #endif
+
+    Buzzer buzzer = Buzzer();
+    stateCollect.setBuzzer(&buzzer);
 
     stateCollect.setSamplesFilename("samples.csv");
 
